@@ -12,11 +12,9 @@ import (
 )
 
 var (
-	ErrUserAlreadyExists     = errors.New("user already exists")
 	ErrEmailAlreadyExists    = errors.New("email already exists")
 	ErrUsernameAlreadyExists = errors.New("username already exists")
 	ErrInvalidCredentials    = errors.New("invalid credentials")
-	ErrUserNotFound          = errors.New("user not found")
 )
 
 type UserService interface {
@@ -71,5 +69,20 @@ func (us *userService) Register(ctx context.Context, jwtSecret []byte, req dto.U
 }
 
 func (us *userService) Login(ctx context.Context, req dto.UserLogin) (string, error) {
-	return "", nil
+	user, err := us.repo.FindByEmail(ctx, req.Email)
+	if err != nil || user == nil {
+		return "", ErrInvalidCredentials
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
+	if err != nil {
+		return "", ErrInvalidCredentials
+	}
+
+	token, err := auth.GenerateJWT([]byte(user.PasswordHash), user.ID.Hex(), user.Username, int(user.Role))
+	if err != nil {
+		return "", fmt.Errorf("failed to generate jwt: %w", err)
+	}
+
+	return token, nil
 }
