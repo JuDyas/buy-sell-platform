@@ -5,10 +5,11 @@ import (
 	"time"
 )
 
-func GenerateJWT(jwtSecret []byte, userID string, username string) (string, error) {
+func GenerateJWT(jwtSecret []byte, userID string, username string, role int) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id":  userID,
 		"username": username,
+		"role":     role,
 		"exp":      time.Now().Add(time.Hour * 144).Unix(),
 	}
 
