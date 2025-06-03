@@ -1,4 +1,4 @@
-module github.com/JuDyas/buy-sell-platform
+module github.com/JuDyas/buy-sell-platform/backend
 
 go 1.23.1
 
