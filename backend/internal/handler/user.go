@@ -66,3 +66,24 @@ func (h *UserHandler) GetByID() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, user)
 	}
 }
+
+func (h *UserHandler) Update() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var req dto.UserUpdate
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		}
+
+		id, err := primitive.ObjectIDFromHex(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		err = h.userService.UpdateByID(c.Request().Context(), id, req)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"message": "user updated"})
+	}
+}
