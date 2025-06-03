@@ -8,6 +8,7 @@ import (
 	"github.com/JuDyas/buy-sell-platform/backend/internal/dto"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/models"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/repository"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,6 +21,7 @@ var (
 type UserService interface {
 	Register(ctx context.Context, jwtSecret []byte, req dto.UserRegister) (string, error)
 	Login(ctx context.Context, jwtSecret []byte, req dto.UserLogin) (string, error)
+	GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error)
 }
 
 type userService struct {
@@ -30,6 +32,10 @@ func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{
 		repo: repo,
 	}
+}
+
+func (us *userService) GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error) {
+	return us.repo.FindByID(ctx, id)
 }
 
 func (us *userService) Register(ctx context.Context, jwtSecret []byte, req dto.UserRegister) (string, error) {

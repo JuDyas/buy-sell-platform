@@ -4,6 +4,7 @@ import (
 	"github.com/JuDyas/buy-sell-platform/backend/internal/dto"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/service"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
@@ -48,5 +49,20 @@ func (h *UserHandler) Login(jwtSecret []byte) echo.HandlerFunc {
 		}
 
 		return c.JSON(http.StatusOK, map[string]string{"token": token})
+	}
+}
+
+func (h *UserHandler) GetByID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id := c.Param("id")
+		objID, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+		user, err := h.userService.GetByID(c.Request().Context(), objID)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "user not found"})
+		}
+		return c.JSON(http.StatusOK, user)
 	}
 }
