@@ -36,3 +36,29 @@ func (r *advertRepository) Create(ctx context.Context, advert *models.Advert) er
 	_, err := r.coll.InsertOne(ctx, advert)
 	return err
 }
+
+func (r *advertRepository) Update(ctx context.Context, id primitive.ObjectID, update bson.M) error {
+	update["updated_at"] = time.Now()
+	_, err := r.coll.UpdateOne(ctx, bson.M{"_id": id, "is_deleted": false}, bson.M{"$set": update})
+
+	return err
+}
+
+func (r *advertRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Advert, error) {
+	var advert models.Advert
+	err := r.coll.FindOne(ctx, bson.M{"_id": id, "is_deleted": false}).Decode(&advert)
+	if err != nil {
+		return nil, err
+	}
+
+	return &advert, nil
+}
+
+func (r *advertRepository) SoftDelete(ctx context.Context, id primitive.ObjectID) error {
+	_, err := r.coll.UpdateOne(
+		ctx,
+		bson.M{"_id": id, "is_deleted": false},
+		bson.M{"$set": bson.M{"is_deleted": true, "updated_at": time.Now()}},
+	)
+	return err
+}
