@@ -19,7 +19,7 @@ var (
 
 type UserService interface {
 	Register(ctx context.Context, jwtSecret []byte, req dto.UserRegister) (string, error)
-	Login(ctx context.Context, req dto.UserLogin) (string, error)
+	Login(ctx context.Context, jwtSecret []byte, req dto.UserLogin) (string, error)
 }
 
 type userService struct {
@@ -68,7 +68,7 @@ func (us *userService) Register(ctx context.Context, jwtSecret []byte, req dto.U
 	return token, nil
 }
 
-func (us *userService) Login(ctx context.Context, req dto.UserLogin) (string, error) {
+func (us *userService) Login(ctx context.Context, jwtSecret []byte, req dto.UserLogin) (string, error) {
 	user, err := us.repo.FindByEmail(ctx, req.Email)
 	if err != nil || user == nil {
 		return "", ErrInvalidCredentials
@@ -79,7 +79,7 @@ func (us *userService) Login(ctx context.Context, req dto.UserLogin) (string, er
 		return "", ErrInvalidCredentials
 	}
 
-	token, err := auth.GenerateJWT([]byte(user.PasswordHash), user.ID.Hex(), user.Username, int(user.Role))
+	token, err := auth.GenerateJWT(jwtSecret, user.ID.Hex(), user.Username, int(user.Role))
 	if err != nil {
 		return "", fmt.Errorf("failed to generate jwt: %w", err)
 	}
