@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (*models.User, error)
 	FindByUsername(ctx context.Context, username string) (*models.User, error)
 	FindByID(ctx context.Context, id primitive.ObjectID) (*models.User, error)
+	UpdateByID(ctx context.Context, id primitive.ObjectID, update bson.M) error
 }
 
 type userRepository struct {
@@ -63,4 +65,20 @@ func (ur *userRepository) FindByID(ctx context.Context, id primitive.ObjectID) (
 	}
 
 	return &user, err
+}
+
+func (ur *userRepository) UpdateByID(ctx context.Context, id primitive.ObjectID, update bson.M) error {
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	res := ur.collection.FindOneAndUpdate(
+		ctx,
+		bson.M{"_id": id},
+		bson.M{"$set": update},
+		opts,
+	)
+
+	if res.Err() != nil {
+		return res.Err()
+	}
+
+	return nil
 }

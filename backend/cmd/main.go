@@ -22,17 +22,20 @@ type App struct {
 	Repositories *app.Repository
 }
 
-func (app *App) Run(envs *config.Config) {
-	app.DBClient = db.NewMongo(envs.MongoURI, envs.MongoDBName)
-	app.RedisClient = db.NewRedis(envs.RedisURI)
+func (a *App) Run(envs *config.Config) {
+	a.DBClient = db.NewMongo(envs.MongoURI, envs.MongoDBName)
+	a.RedisClient = db.NewRedis(envs.RedisURI)
 
+	a.Repositories = &app.Repository{}
+	a.Services = &app.Service{}
+	a.Handlers = &app.Handlers{}
 	//TODO: КОЛЕКЦИИ ВЫНЕСТИ
-	app.Repositories.UserRepository = repository.NewUserRepository(app.DBClient.DB, "users")
-	app.Services.UserService = service.NewUserService(app.Repositories.UserRepository)
-	app.Handlers.UserHandler = handler.NewUserHandler(app.Services.UserService)
+	a.Repositories.UserRepository = repository.NewUserRepository(a.DBClient.DB, "users")
+	a.Services.UserService = service.NewUserService(a.Repositories.UserRepository)
+	a.Handlers.UserHandler = handler.NewUserHandler(a.Services.UserService)
 
-	app.Router = echo.New()
-	routes.SetupRoutes(app.Router, *envs, *app.Handlers)
+	a.Router = echo.New()
+	routes.SetupRoutes(a.Router, *envs, *a.Handlers)
 }
 
 func main() {
@@ -42,7 +45,7 @@ func main() {
 	)
 
 	app.Run(envs)
-	err := app.Router.Start(envs.Port)
+	err := app.Router.Start(":" + envs.Port)
 	if err != nil {
 		log.Printf("failed to start server: %v", err)
 	}

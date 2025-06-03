@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/auth"
@@ -9,6 +10,7 @@ import (
 	"github.com/JuDyas/buy-sell-platform/backend/internal/models"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/repository"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -22,6 +24,7 @@ type UserService interface {
 	Register(ctx context.Context, jwtSecret []byte, req dto.UserRegister) (string, error)
 	Login(ctx context.Context, jwtSecret []byte, req dto.UserLogin) (string, error)
 	GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error)
+	UpdateByID(ctx context.Context, id primitive.ObjectID, req dto.UserUpdate) error
 }
 
 type userService struct {
@@ -91,4 +94,45 @@ func (us *userService) Login(ctx context.Context, jwtSecret []byte, req dto.User
 	}
 
 	return token, nil
+}
+
+func (us *userService) UpdateByID(ctx context.Context, id primitive.ObjectID, req dto.UserUpdate) error {
+	update, err := structToBsonMap(req)
+	if err != nil {
+		return fmt.Errorf("failed to convert struct to bson map: %w", err)
+	}
+
+	if len(update) == 0 {
+		return fmt.Errorf("empty update")
+	}
+
+	err = us.repo.UpdateByID(ctx, id, update)
+	if err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+
+	return nil
+}
+
+func structToBsonMap(s interface{}) (bson.M, error) {
+	tmp, err := json.Marshal(s)
+	if err != nil {
+		return nil, err
+	}
+
+	var m map[string]interface{}
+	if err := json.Unmarshal(tmp, &m); err != nil {
+		return nil, err
+	}
+
+	for k, v := range m {
+		switch x := v.(type) {
+		case string:
+			if x == "" {
+				delete(m, k)
+			}
+		}
+	}
+
+	return m, nil
 }
