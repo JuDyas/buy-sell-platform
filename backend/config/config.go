@@ -10,9 +10,9 @@ type Config struct {
 	JWTSecret   []byte
 	MongoURI    string
 	MongoDBName string
-	MongoUser   string
-	MongoPass   string
-	RedisURI    string
+	//MongoUser   string
+	//MongoPass   string
+	RedisURI string
 }
 
 func LoadConfig() *Config {
@@ -21,9 +21,9 @@ func LoadConfig() *Config {
 		JWTSecret:   []byte(getEnv("JWT_SECRET")),
 		MongoURI:    getEnv("MONGO_URI"),
 		MongoDBName: getEnv("MONGO_DB_NAME"),
-		MongoUser:   getEnv("MONGO_INITDB_ROOT_USERNAME"),
-		MongoPass:   getEnv("MONGO_INITDB_ROOT_PASSWORD"),
-		RedisURI:    getEnv("REDIS_URI"),
+		//MongoUser:   getEnv("MONGO_INITDB_ROOT_USERNAME"),
+		//MongoPass:   getEnv("MONGO_INITDB_ROOT_PASSWORD"),
+		RedisURI: getEnv("REDIS_URI"),
 	}
 }
 
