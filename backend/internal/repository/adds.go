@@ -10,7 +10,7 @@ import (
 )
 
 type AdvertRepository interface {
-	Create(ctx context.Context, advert *models.Advert) error
+	Create(ctx context.Context, advert *models.Advert) (*models.Advert, error)
 	Update(ctx context.Context, id primitive.ObjectID, update bson.M) error
 	FindByID(ctx context.Context, id primitive.ObjectID) (*models.Advert, error)
 	SoftDelete(ctx context.Context, id primitive.ObjectID) error
@@ -26,7 +26,7 @@ func NewAdvertRepository(db *mongo.Database) AdvertRepository {
 	}
 }
 
-func (r *advertRepository) Create(ctx context.Context, advert *models.Advert) error {
+func (r *advertRepository) Create(ctx context.Context, advert *models.Advert) (*models.Advert, error) {
 	now := time.Now()
 	advert.ID = primitive.NewObjectID()
 	advert.CreatedAt = now
@@ -34,7 +34,7 @@ func (r *advertRepository) Create(ctx context.Context, advert *models.Advert) er
 	advert.IsDeleted = false
 
 	_, err := r.coll.InsertOne(ctx, advert)
-	return err
+	return advert, err
 }
 
 func (r *advertRepository) Update(ctx context.Context, id primitive.ObjectID, update bson.M) error {
