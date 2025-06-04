@@ -1,0 +1,98 @@
+package handler
+
+import (
+	"github.com/JuDyas/buy-sell-platform/backend/internal/dto"
+	"github.com/JuDyas/buy-sell-platform/backend/internal/service"
+	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"net/http"
+)
+
+type AdvertHandler struct {
+	service service.AdvertService
+}
+
+func NewAdvertHandler(service service.AdvertService) *AdvertHandler {
+	return &AdvertHandler{
+		service: service,
+	}
+}
+
+func (h *AdvertHandler) Create() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var req dto.AdvertCreate
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		}
+
+		authorIDStr := c.Get("userID")
+		if authorIDStr == nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		}
+
+		authorID, err := primitive.ObjectIDFromHex(authorIDStr.(string))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid author id"})
+		}
+
+		advert, err := h.service.Create(c.Request().Context(), authorID, req)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot create advert"})
+		}
+
+		return c.JSON(http.StatusCreated, map[string]interface{}{"id": advert.ID.Hex()})
+	}
+}
+
+func (h *AdvertHandler) Update() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var req dto.AdvertUpdate
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		}
+
+		advertID, err := primitive.ObjectIDFromHex(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		err = h.service.Update(c.Request().Context(), advertID, req)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot update advert"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"message": "advert updated"})
+	}
+}
+
+func (h *AdvertHandler) GetByID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		advertID, err := primitive.ObjectIDFromHex(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		advert, err := h.service.GetByID(c.Request().Context(), advertID)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "advert not found"})
+		}
+
+		return c.JSON(http.StatusOK, advert)
+	}
+}
+
+func (h *AdvertHandler) SoftDelete() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		advertID, err := primitive.ObjectIDFromHex(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		err = h.service.SoftDelete(c.Request().Context(), advertID)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot delete advert"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"message": "advert deleted"})
+	}
+}
