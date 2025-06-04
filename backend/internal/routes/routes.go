@@ -20,5 +20,6 @@ func SetupRoutes(e *echo.Echo, envs config.Config, handlers app.Handlers) {
 	})
 	users.POST("/register", handlers.UserHandler.Register(envs.JWTSecret))
 	users.POST("/login", handlers.UserHandler.Login(envs.JWTSecret))
-	users.PUT("/:id", handlers.UserHandler.Update())
+	users.PUT("", handlers.UserHandler.Update())
+	users.GET("/:id", handlers.UserHandler.GetByID())
 }
