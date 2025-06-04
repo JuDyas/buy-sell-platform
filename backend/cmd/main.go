@@ -46,11 +46,11 @@ func (a *App) Run(envs *config.Config) {
 func main() {
 	var (
 		envs = config.LoadConfig()
-		app  = &App{}
+		a    = &App{}
 	)
 
-	app.Run(envs)
-	err := app.Router.Start(":" + envs.Port)
+	a.Run(envs)
+	err := a.Router.Start(":" + envs.Port)
 	if err != nil {
 		log.Printf("failed to start server: %v", err)
 	}
