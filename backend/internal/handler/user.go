@@ -59,10 +59,12 @@ func (h *UserHandler) GetByID() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
 		}
+
 		user, err := h.userService.GetByID(c.Request().Context(), objID)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, map[string]string{"error": "user not found"})
 		}
+
 		return c.JSON(http.StatusOK, user)
 	}
 }
@@ -74,7 +76,7 @@ func (h *UserHandler) Update() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 		}
 
-		id, err := primitive.ObjectIDFromHex(c.Param("id"))
+		id, err := primitive.ObjectIDFromHex(c.Get("userID").(string))
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
 		}
