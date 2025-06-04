@@ -5,7 +5,14 @@ import (
 	"github.com/JuDyas/buy-sell-platform/backend/internal/service"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+)
+
+var (
+	fileDir = "./static/images/avatars/"
 )
 
 type UserHandler struct {
@@ -87,5 +94,46 @@ func (h *UserHandler) Update() echo.HandlerFunc {
 		}
 
 		return c.JSON(http.StatusOK, map[string]string{"message": "user updated"})
+	}
+}
+
+func (h *UserHandler) UploadAvatar() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		uid, ok := c.Get("userID").(string)
+		if !ok || uid == "" {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+		}
+
+		file, err := c.FormFile("file")
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid file"})
+		}
+
+		src, err := file.Open()
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot open file"})
+		}
+		defer src.Close()
+
+		os.MkdirAll(fileDir, os.ModePerm)
+		filename := uid + filepath.Ext(file.Filename)
+		dstPath := filepath.Join(fileDir, filename)
+
+		dst, err := os.Create(dstPath)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot create file"})
+		}
+		defer dst.Close()
+
+		if _, err = io.Copy(dst, src); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot copy file"})
+		}
+
+		avatarURL := "/static/images/avatars/" + filename
+		if err := h.userService.UpdateAvatar(c.Request().Context(), uid, avatarURL); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot update avatar"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"avatarURL": avatarURL})
 	}
 }
