@@ -22,4 +22,5 @@ func SetupRoutes(e *echo.Echo, envs config.Config, handlers app.Handlers) {
 	users.POST("/login", handlers.UserHandler.Login(envs.JWTSecret))
 	users.PUT("", handlers.UserHandler.Update())
 	users.GET("/:id", handlers.UserHandler.GetByID())
+	users.POST("/upload-avatar", handlers.UserHandler.UploadAvatar())
 }
