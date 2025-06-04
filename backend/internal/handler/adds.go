@@ -43,3 +43,24 @@ func (h *AdvertHandler) Create() echo.HandlerFunc {
 		return c.JSON(http.StatusCreated, map[string]interface{}{"id": advert.ID.Hex()})
 	}
 }
+
+func (h *AdvertHandler) Update() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var req dto.AdvertUpdate
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		}
+
+		advertID, err := primitive.ObjectIDFromHex(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		err = h.service.Update(c.Request().Context(), advertID, req)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot update advert"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"message": "advert updated"})
+	}
+}
