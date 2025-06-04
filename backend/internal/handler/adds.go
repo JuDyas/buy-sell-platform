@@ -80,3 +80,19 @@ func (h *AdvertHandler) GetByID() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, advert)
 	}
 }
+
+func (h *AdvertHandler) SoftDelete() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		advertID, err := primitive.ObjectIDFromHex(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		err = h.service.SoftDelete(c.Request().Context(), advertID)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot delete advert"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"message": "advert deleted"})
+	}
+}
