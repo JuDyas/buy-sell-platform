@@ -29,10 +29,15 @@ func (a *App) Run(envs *config.Config) {
 	a.Repositories = &app.Repository{}
 	a.Services = &app.Service{}
 	a.Handlers = &app.Handlers{}
+
 	//TODO: КОЛЕКЦИИ ВЫНЕСТИ
 	a.Repositories.UserRepository = repository.NewUserRepository(a.DBClient.DB, "users")
 	a.Services.UserService = service.NewUserService(a.Repositories.UserRepository)
 	a.Handlers.UserHandler = handler.NewUserHandler(a.Services.UserService)
+
+	a.Repositories.AdvertRepository = repository.NewAdvertRepository(a.DBClient.DB, "adds")
+	a.Services.AdvertService = service.NewAdvertService(a.Repositories.AdvertRepository)
+	a.Handlers.AdvertHandler = handler.NewAdvertHandler(a.Services.AdvertService)
 
 	a.Router = echo.New()
 	routes.SetupRoutes(a.Router, *envs, *a.Handlers)

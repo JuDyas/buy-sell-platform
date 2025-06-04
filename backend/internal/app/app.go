@@ -7,13 +7,16 @@ import (
 )
 
 type Handlers struct {
-	UserHandler *handler.UserHandler
+	UserHandler   *handler.UserHandler
+	AdvertHandler *handler.AdvertHandler
 }
 
 type Service struct {
-	UserService service.UserService
+	UserService   service.UserService
+	AdvertService service.AdvertService
 }
 
 type Repository struct {
-	UserRepository repository.UserRepository
+	UserRepository   repository.UserRepository
+	AdvertRepository repository.AdvertRepository
 }
