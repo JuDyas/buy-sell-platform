@@ -25,6 +25,7 @@ type UserService interface {
 	Login(ctx context.Context, jwtSecret []byte, req dto.UserLogin) (string, error)
 	GetByID(ctx context.Context, id primitive.ObjectID) (*dto.UserPublic, error)
 	UpdateByID(ctx context.Context, id primitive.ObjectID, req dto.UserUpdate) error
+	UpdateAvatar(ctx context.Context, id string, avatarURL string) error
 }
 
 type userService struct {
@@ -110,6 +111,21 @@ func (us *userService) Login(ctx context.Context, jwtSecret []byte, req dto.User
 	}
 
 	return token, nil
+}
+
+func (us *userService) UpdateAvatar(ctx context.Context, id string, avatarURL string) error {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("failed to convert id to object id: %w", err)
+	}
+
+	update := bson.M{"avatar_url": avatarURL}
+	err = us.repo.UpdateByID(ctx, objID, update)
+	if err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+
+	return nil
 }
 
 func (us *userService) UpdateByID(ctx context.Context, id primitive.ObjectID, req dto.UserUpdate) error {
