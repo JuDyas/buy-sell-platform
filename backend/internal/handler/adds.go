@@ -64,3 +64,19 @@ func (h *AdvertHandler) Update() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, map[string]string{"message": "advert updated"})
 	}
 }
+
+func (h *AdvertHandler) GetByID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		advertID, err := primitive.ObjectIDFromHex(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		advert, err := h.service.GetByID(c.Request().Context(), advertID)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "advert not found"})
+		}
+
+		return c.JSON(http.StatusOK, advert)
+	}
+}
