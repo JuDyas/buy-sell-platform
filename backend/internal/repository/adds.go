@@ -20,9 +20,9 @@ type advertRepository struct {
 	coll *mongo.Collection
 }
 
-func NewAdvertRepository(db *mongo.Database) AdvertRepository {
+func NewAdvertRepository(db *mongo.Database, collection string) AdvertRepository {
 	return &advertRepository{
-		coll: db.Collection("adverts"),
+		coll: db.Collection(collection),
 	}
 }
 
