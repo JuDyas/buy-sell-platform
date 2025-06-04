@@ -23,7 +23,7 @@ var (
 type UserService interface {
 	Register(ctx context.Context, jwtSecret []byte, req dto.UserRegister) (string, error)
 	Login(ctx context.Context, jwtSecret []byte, req dto.UserLogin) (string, error)
-	GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error)
+	GetByID(ctx context.Context, id primitive.ObjectID) (*dto.UserPublic, error)
 	UpdateByID(ctx context.Context, id primitive.ObjectID, req dto.UserUpdate) error
 }
 
@@ -37,8 +37,24 @@ func NewUserService(repo repository.UserRepository) UserService {
 	}
 }
 
-func (us *userService) GetByID(ctx context.Context, id primitive.ObjectID) (*models.User, error) {
-	return us.repo.FindByID(ctx, id)
+func (us *userService) GetByID(ctx context.Context, id primitive.ObjectID) (*dto.UserPublic, error) {
+	user, err := us.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	pubUser := &dto.UserPublic{
+		ID:        user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		Role:      user.Role,
+		Phone:     user.Phone,
+		Location:  user.Location,
+		AvatarURL: user.AvatarURL,
+		CreatedAt: user.CreatedAt,
+	}
+
+	return pubUser, nil
 }
 
 func (us *userService) Register(ctx context.Context, jwtSecret []byte, req dto.UserRegister) (string, error) {
@@ -125,12 +141,22 @@ func structToBsonMap(s interface{}) (bson.M, error) {
 		return nil, err
 	}
 
-	for k, v := range m {
-		switch x := v.(type) {
-		case string:
-			if x == "" {
-				delete(m, k)
+	if userUpdate, ok := s.(dto.UserUpdate); ok {
+		if userUpdate.Password != "" {
+			hash, err := bcrypt.GenerateFromPassword([]byte(userUpdate.Password), bcrypt.DefaultCost)
+			if err != nil {
+				return nil, fmt.Errorf("failed to hash password: %w", err)
 			}
+
+			m["password_hash"] = string(hash)
+		}
+
+		delete(m, "password")
+	}
+
+	for k, v := range m {
+		if str, ok := v.(string); ok && str == "" {
+			delete(m, k)
 		}
 	}
 
