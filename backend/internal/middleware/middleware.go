@@ -33,7 +33,6 @@ func AuthMiddleware(jwtSecret []byte) echo.MiddlewareFunc {
 			if err != nil {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid token"})
 			}
-
 			claims, ok := token.Claims.(jwt.MapClaims)
 			if !ok {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid token claims"})
