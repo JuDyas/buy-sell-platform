@@ -10,7 +10,7 @@ import (
 )
 
 type AdvertService interface {
-	Create(ctx context.Context, authorID primitive.ObjectID, req dto.AdvertCreate) error
+	Create(ctx context.Context, authorID primitive.ObjectID, req dto.AdvertCreate) (*models.Advert, error)
 	Update(ctx context.Context, advertID primitive.ObjectID, req dto.AdvertUpdate) error
 	GetByID(ctx context.Context, advertID primitive.ObjectID) (*models.Advert, error)
 	SoftDelete(ctx context.Context, advertID primitive.ObjectID) error
@@ -26,7 +26,7 @@ func NewAdvertService(repo repository.AdvertRepository) AdvertService {
 	}
 }
 
-func (s *advertService) Create(ctx context.Context, authorID primitive.ObjectID, req dto.AdvertCreate) error {
+func (s *advertService) Create(ctx context.Context, authorID primitive.ObjectID, req dto.AdvertCreate) (*models.Advert, error) {
 	advert := &models.Advert{
 		Title:       req.Title,
 		Description: req.Description,
@@ -35,12 +35,12 @@ func (s *advertService) Create(ctx context.Context, authorID primitive.ObjectID,
 		AuthorID:    authorID,
 	}
 
-	err := s.repo.Create(ctx, advert)
+	adv, err := s.repo.Create(ctx, advert)
 	if err != nil {
-		return fmt.Errorf("failed to create advert: %w", err)
+		return nil, fmt.Errorf("failed to create advert: %w", err)
 	}
 
-	return nil
+	return adv, nil
 }
 
 func (s *advertService) Update(ctx context.Context, advertID primitive.ObjectID, req dto.AdvertUpdate) error {
