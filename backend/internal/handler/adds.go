@@ -1,1 +1,45 @@
 package handler
+
+import (
+	"github.com/JuDyas/buy-sell-platform/backend/internal/dto"
+	"github.com/JuDyas/buy-sell-platform/backend/internal/service"
+	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"net/http"
+)
+
+type AdvertHandler struct {
+	service service.AdvertService
+}
+
+func NewAdvertHandler(service service.AdvertService) *AdvertHandler {
+	return &AdvertHandler{
+		service: service,
+	}
+}
+
+func (h *AdvertHandler) Create() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var req dto.AdvertCreate
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		}
+
+		authorIDStr := c.Get("userID")
+		if authorIDStr == nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		}
+
+		authorID, err := primitive.ObjectIDFromHex(authorIDStr.(string))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid author id"})
+		}
+
+		advert, err := h.service.Create(c.Request().Context(), authorID, req)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot create advert"})
+		}
+
+		return c.JSON(http.StatusCreated, map[string]interface{}{"id": advert.ID.Hex()})
+	}
+}
