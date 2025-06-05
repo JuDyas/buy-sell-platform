@@ -25,6 +25,7 @@ type AdvertService interface {
 	SoftDelete(ctx context.Context, advertID primitive.ObjectID) error
 	UploadImages([]*multipart.FileHeader) ([]string, error)
 	GetAll(ctx context.Context) ([]models.Advert, error)
+	GetByCategory(ctx context.Context, categoryID primitive.ObjectID) ([]models.Advert, error)
 }
 
 type advertService struct {
@@ -125,6 +126,16 @@ func (s *advertService) UploadImages(files []*multipart.FileHeader) ([]string, e
 
 func (s *advertService) GetAll(ctx context.Context) ([]models.Advert, error) {
 	adverts, err := s.repo.GetAll(ctx)
+	if err != nil {
+		log.Error(fmt.Sprintf("Error getting adverts: %v", err))
+		return nil, err
+	}
+
+	return adverts, nil
+}
+
+func (s *advertService) GetByCategory(ctx context.Context, categoryID primitive.ObjectID) ([]models.Advert, error) {
+	adverts, err := s.repo.GetByCategory(ctx, categoryID)
 	if err != nil {
 		log.Error(fmt.Sprintf("Error getting adverts: %v", err))
 		return nil, err
