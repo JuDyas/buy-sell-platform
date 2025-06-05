@@ -144,3 +144,19 @@ func (h *AdvertHandler) GetByCategory() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, adverts)
 	}
 }
+
+func (h *AdvertHandler) GetByAuthor() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		authorID, err := primitive.ObjectIDFromHex(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		adverts, err := h.service.GetByUserID(c.Request().Context(), authorID)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "adverts not found"})
+		}
+
+		return c.JSON(http.StatusOK, adverts)
+	}
+}
