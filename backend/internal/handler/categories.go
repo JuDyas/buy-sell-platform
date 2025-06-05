@@ -74,3 +74,20 @@ func (h *CategoryHandler) GetByID() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, category)
 	}
 }
+
+func (h *CategoryHandler) Delete() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id := c.Param("id")
+		idObj, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		err = h.service.Delete(c.Request().Context(), idObj)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot delete category"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"message": "category deleted"})
+	}
+}
