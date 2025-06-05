@@ -11,7 +11,7 @@ import (
 )
 
 type CategoryRepository interface {
-	Create(ctx context.Context, category *models.Category) error
+	Create(ctx context.Context, category *models.Category) (string, error)
 	Update(ctx context.Context, id primitive.ObjectID, update bson.M) error
 	Delete(ctx context.Context, id primitive.ObjectID) error
 	GetByID(ctx context.Context, id primitive.ObjectID) (*models.Category, error)
@@ -28,16 +28,16 @@ func NewCategoryRepository(db *mongo.Database, collection string) CategoryReposi
 	}
 }
 
-func (r *categoryRepository) Create(ctx context.Context, category *models.Category) error {
+func (r *categoryRepository) Create(ctx context.Context, category *models.Category) (string, error) {
 	category.ID = primitive.NewObjectID()
 	category.CreatedAt = time.Now()
 	category.UpdatedAt = category.CreatedAt
 	_, err := r.coll.InsertOne(ctx, category)
 	if err != nil {
-		return fmt.Errorf("failed to create category: %w", err)
+		return "", fmt.Errorf("failed to create category: %w", err)
 	}
 
-	return nil
+	return category.ID.Hex(), nil
 }
 
 func (r *categoryRepository) Update(ctx context.Context, id primitive.ObjectID, update bson.M) error {

@@ -11,7 +11,7 @@ import (
 )
 
 type CategoriesService interface {
-	Create(ctx context.Context, req dto.CategoryCreate) error
+	Create(ctx context.Context, req dto.CategoryCreate) (string, error)
 	Update(ctx context.Context, id primitive.ObjectID, req dto.CategoryUpdate) error
 	GetByID(ctx context.Context, id primitive.ObjectID) (*models.Category, error)
 	GetAll(ctx context.Context) ([]models.Category, error)
@@ -28,19 +28,19 @@ func NewCategoriesService(repo repository.CategoryRepository) CategoriesService 
 	}
 }
 
-func (s *categoriesService) Create(ctx context.Context, req dto.CategoryCreate) error {
+func (s *categoriesService) Create(ctx context.Context, req dto.CategoryCreate) (string, error) {
 	category := models.Category{
 		Name:        req.Name,
 		Description: req.Description,
 	}
 
-	err := s.repo.Create(ctx, &category)
+	id, err := s.repo.Create(ctx, &category)
 	if err != nil {
 		log.Error(fmt.Sprintf("Error creating category: %v", err))
-		return err
+		return "", err
 	}
 
-	return nil
+	return id, nil
 }
 
 func (s *categoriesService) Update(ctx context.Context, id primitive.ObjectID, req dto.CategoryUpdate) error {
