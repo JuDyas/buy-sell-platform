@@ -40,6 +40,7 @@ func (a *App) Run(envs *config.Config) {
 	a.Handlers.AdvertHandler = handler.NewAdvertHandler(a.Services.AdvertService)
 
 	a.Router = echo.New()
+	a.Router.Static("/static", "static")
 	routes.SetupRoutes(a.Router, *envs, *a.Handlers)
 }
 

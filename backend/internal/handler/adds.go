@@ -96,3 +96,24 @@ func (h *AdvertHandler) SoftDelete() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, map[string]string{"message": "advert deleted"})
 	}
 }
+
+func (h *AdvertHandler) UploadImages() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		form, err := c.MultipartForm()
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		}
+
+		files := form.File["images"]
+		if len(files) == 0 {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "no images"})
+		}
+
+		urls, err := h.service.UploadImages(files)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cannot upload images"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]interface{}{"images": urls})
+	}
+}

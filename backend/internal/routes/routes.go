@@ -12,6 +12,7 @@ func SetupRoutes(e *echo.Echo, envs config.Config, handlers app.Handlers) {
 	var (
 		v1    = e.Group("/api/v1")
 		users = v1.Group("/users")
+		adds  = v1.Group("/adds")
 	)
 
 	e.Use(middleware.AuthMiddleware(envs.JWTSecret))
@@ -23,4 +24,10 @@ func SetupRoutes(e *echo.Echo, envs config.Config, handlers app.Handlers) {
 	users.PUT("", handlers.UserHandler.Update())
 	users.GET("/:id", handlers.UserHandler.GetByID())
 	users.POST("/upload-avatar", handlers.UserHandler.UploadAvatar())
+
+	adds.POST("", handlers.AdvertHandler.Create())
+	adds.PUT("/:id", handlers.AdvertHandler.Update())
+	adds.GET("/:id", handlers.AdvertHandler.GetByID())
+	adds.DELETE("/:id", handlers.AdvertHandler.SoftDelete())
+	adds.POST("/upload-images", handlers.AdvertHandler.UploadImages())
 }
