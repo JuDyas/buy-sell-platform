@@ -51,9 +51,28 @@ func (h *AdvertHandler) Update() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 		}
 
+		userIDStr := c.Get("userID")
+		if userIDStr == nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		}
+
+		userID, err := primitive.ObjectIDFromHex(userIDStr.(string))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+		}
+
 		advertID, err := primitive.ObjectIDFromHex(c.Param("id"))
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		advert, err := h.service.GetByID(c.Request().Context(), advertID)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "advert not found"})
+		}
+
+		if advert.AuthorID != userID {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
 		}
 
 		err = h.service.Update(c.Request().Context(), advertID, req)
