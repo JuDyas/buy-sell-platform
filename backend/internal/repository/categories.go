@@ -54,3 +54,13 @@ func (r *categoryRepository) Delete(ctx context.Context, id primitive.ObjectID) 
 
 	return nil
 }
+
+func (r *categoryRepository) GetByID(ctx context.Context, id primitive.ObjectID) (*models.Category, error) {
+	var category models.Category
+	err := r.coll.FindOne(ctx, bson.M{"_id": id}).Decode(&category)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find category: %w", err)
+	}
+
+	return &category, nil
+}
