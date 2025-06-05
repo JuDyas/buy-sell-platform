@@ -12,6 +12,10 @@ import (
 
 type CategoryRepository interface {
 	Create(ctx context.Context, category *models.Category) error
+	Update(ctx context.Context, id primitive.ObjectID, update bson.M) error
+	Delete(ctx context.Context, id primitive.ObjectID) error
+	GetByID(ctx context.Context, id primitive.ObjectID) (*models.Category, error)
+	GetAll(ctx context.Context) ([]models.Category, error)
 }
 
 type categoryRepository struct {
