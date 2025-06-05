@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/dto"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/service"
 	"github.com/labstack/echo/v4"
@@ -81,8 +82,8 @@ func (h *CategoryHandler) GetAll() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusNotFound, map[string]string{"error": "categories not found"})
 		}
-
-		return c.JSON(http.StatusOK, categories)
+		fmt.Printf("Categories: %#v\n", categories)
+		return c.JSON(http.StatusOK, map[string]interface{}{"categories": categories})
 	}
 }
 
