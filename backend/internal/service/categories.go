@@ -13,6 +13,7 @@ import (
 type CategoriesService interface {
 	Create(ctx context.Context, req dto.CategoryCreate) error
 	Update(ctx context.Context, id primitive.ObjectID, req dto.CategoryUpdate) error
+	GetByID(ctx context.Context, id primitive.ObjectID) (*models.Category, error)
 }
 
 type categoriesService struct {
@@ -54,4 +55,14 @@ func (s *categoriesService) Update(ctx context.Context, id primitive.ObjectID, r
 	}
 
 	return nil
+}
+
+func (s *categoriesService) GetByID(ctx context.Context, id primitive.ObjectID) (*models.Category, error) {
+	category, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		log.Error(fmt.Sprintf("Error getting category: %v", err))
+		return nil, err
+	}
+
+	return category, nil
 }
