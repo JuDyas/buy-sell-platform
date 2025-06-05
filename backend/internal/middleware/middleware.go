@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"github.com/JuDyas/buy-sell-platform/backend/internal/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -43,13 +44,29 @@ func AuthMiddleware(jwtSecret []byte) echo.MiddlewareFunc {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id"})
 			}
 
+			role, ok := claims["role"].(float64)
+			if !ok {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid role"})
+			}
+
 			ctx := context.WithValue(c.Request().Context(), UserIDKey, userID)
 			c.SetRequest(c.Request().WithContext(ctx))
 
 			c.Set("userID", userID)
+			c.Set("userRole", int(role))
 
 			return next(c)
 		}
 	}
+}
 
+func AdminMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		role, ok := c.Get("userRole").(int)
+		if !ok || role != int(models.RoleAdmin) {
+			return c.JSON(http.StatusForbidden, map[string]string{"error": "forbidden"})
+		}
+
+		return next(c)
+	}
 }
