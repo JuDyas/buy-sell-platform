@@ -6,7 +6,16 @@ import (
 	"github.com/JuDyas/buy-sell-platform/backend/internal/dto"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/models"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/repository"
+	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
+)
+
+var (
+	fileDir = "./static/images/adverts/"
 )
 
 type AdvertService interface {
@@ -14,6 +23,7 @@ type AdvertService interface {
 	Update(ctx context.Context, advertID primitive.ObjectID, req dto.AdvertUpdate) error
 	GetByID(ctx context.Context, advertID primitive.ObjectID) (*models.Advert, error)
 	SoftDelete(ctx context.Context, advertID primitive.ObjectID) error
+	UploadImages([]*multipart.FileHeader) ([]string, error)
 }
 
 type advertService struct {
@@ -73,4 +83,41 @@ func (s *advertService) SoftDelete(ctx context.Context, advertID primitive.Objec
 	}
 
 	return nil
+}
+
+func (s *advertService) UploadImages(files []*multipart.FileHeader) ([]string, error) {
+	var urls []string
+	for _, file := range files {
+		src, err := file.Open()
+		if err != nil {
+			log.Error(err)
+			return nil, fmt.Errorf("failed to open file: %w", err)
+		}
+		defer src.Close()
+
+		err = os.MkdirAll(fileDir, os.ModePerm)
+		if err != nil {
+			log.Error(err)
+			return nil, fmt.Errorf("failed to create directory: %w", err)
+		}
+
+		fileName := primitive.NewObjectID().Hex() + filepath.Ext(file.Filename)
+		dstPath := filepath.Join(fileDir, fileName)
+
+		dst, err := os.Create(dstPath)
+		if err != nil {
+			log.Error(err)
+			return nil, fmt.Errorf("failed to create file: %w", err)
+		}
+		defer dst.Close()
+
+		if _, err = io.Copy(dst, src); err != nil {
+			log.Error(err)
+			return nil, fmt.Errorf("failed to copy file: %w", err)
+		}
+
+		urls = append(urls, fileDir+fileName)
+	}
+
+	return urls, nil
 }
