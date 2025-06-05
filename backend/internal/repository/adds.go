@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -14,6 +15,7 @@ type AdvertRepository interface {
 	Update(ctx context.Context, id primitive.ObjectID, update bson.M) error
 	FindByID(ctx context.Context, id primitive.ObjectID) (*models.Advert, error)
 	SoftDelete(ctx context.Context, id primitive.ObjectID) error
+	GetAll(ctx context.Context) ([]models.Advert, error)
 }
 
 type advertRepository struct {
@@ -61,4 +63,22 @@ func (r *advertRepository) SoftDelete(ctx context.Context, id primitive.ObjectID
 		bson.M{"$set": bson.M{"is_deleted": true, "updated_at": time.Now()}},
 	)
 	return err
+}
+
+func (r *advertRepository) GetAll(ctx context.Context) ([]models.Advert, error) {
+	cur, err := r.coll.Find(ctx, bson.M{"is_deleted": false})
+	if err != nil {
+		return nil, fmt.Errorf("failed to find adverts: %w", err)
+	}
+	defer cur.Close(ctx)
+
+	var adverts []models.Advert
+	for cur.Next(ctx) {
+		var advert models.Advert
+		if err := cur.Decode(&advert); err != nil {
+			adverts = append(adverts, advert)
+		}
+	}
+
+	return adverts, nil
 }
