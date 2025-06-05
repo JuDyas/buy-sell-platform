@@ -39,9 +39,16 @@ func NewAdvertService(repo repository.AdvertRepository) AdvertService {
 }
 
 func (s *advertService) Create(ctx context.Context, authorID primitive.ObjectID, req dto.AdvertCreate) (*models.Advert, error) {
+	catID, err := primitive.ObjectIDFromHex(req.Category)
+	if err != nil {
+		log.Error(fmt.Sprintf("Error converting category id: %v", err))
+		return nil, err
+	}
+
 	advert := &models.Advert{
 		Title:       req.Title,
 		Description: req.Description,
+		Category:    catID,
 		Price:       req.Price,
 		Images:      req.Images,
 		AuthorID:    authorID,

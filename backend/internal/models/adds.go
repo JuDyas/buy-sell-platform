@@ -9,7 +9,7 @@ type Advert struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`
 	Title       string             `bson:"title"`
 	Description string             `bson:"description"`
-	Category    string             `bson:"category_id"`
+	Category    primitive.ObjectID `bson:"category_id"`
 	Price       int                `bson:"price"`
 	Images      []string           `bson:"images"`
 	AuthorID    primitive.ObjectID `bson:"author_id"`

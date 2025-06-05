@@ -97,7 +97,7 @@ func (r *advertRepository) GetByCategory(ctx context.Context, categoryId primiti
 	var adverts []models.Advert
 	for cur.Next(ctx) {
 		var advert models.Advert
-		if err := cur.Decode(&advert); err != nil {
+		if err := cur.Decode(&advert); err == nil {
 			adverts = append(adverts, advert)
 		}
 	}

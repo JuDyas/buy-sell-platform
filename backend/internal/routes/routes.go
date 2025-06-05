@@ -36,6 +36,8 @@ func SetupRoutes(e *echo.Echo, envs config.Config, handlers app.Handlers) {
 
 	categories.GET("", handlers.CategoryHandler.GetAll())
 	categories.GET("/:id", handlers.CategoryHandler.GetByID())
+	categories.PUT("/:id", handlers.CategoryHandler.Update())
+	categories.GET("/:id/adds", handlers.AdvertHandler.GetByCategory())
 
 	admin.POST("/categories", handlers.CategoryHandler.Create())
 	admin.PUT("/categories/:id", handlers.CategoryHandler.Update())
