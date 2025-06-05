@@ -57,3 +57,20 @@ func (h *CategoryHandler) Update() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, map[string]string{"message": "category updated"})
 	}
 }
+
+func (h *CategoryHandler) GetByID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id := c.Param("id")
+		idObj, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		}
+
+		category, err := h.service.GetByID(c.Request().Context(), idObj)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "category not found"})
+		}
+
+		return c.JSON(http.StatusOK, category)
+	}
+}
