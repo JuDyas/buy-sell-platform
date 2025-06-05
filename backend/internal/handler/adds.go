@@ -125,7 +125,7 @@ func (h *AdvertHandler) GetAll() echo.HandlerFunc {
 			return c.JSON(http.StatusNotFound, map[string]string{"error": "adverts not found"})
 		}
 
-		return c.JSON(http.StatusOK, adverts)
+		return c.JSON(http.StatusOK, map[string]interface{}{"adverts": adverts})
 	}
 }
 
