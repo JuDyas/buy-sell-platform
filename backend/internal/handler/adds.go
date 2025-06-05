@@ -117,3 +117,14 @@ func (h *AdvertHandler) UploadImages() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, map[string]interface{}{"images": urls})
 	}
 }
+
+func (h *AdvertHandler) GetAll() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		adverts, err := h.service.GetAll(c.Request().Context())
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "adverts not found"})
+		}
+
+		return c.JSON(http.StatusOK, adverts)
+	}
+}
