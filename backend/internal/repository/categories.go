@@ -45,3 +45,12 @@ func (r *categoryRepository) Update(ctx context.Context, id primitive.ObjectID, 
 
 	return nil
 }
+
+func (r *categoryRepository) Delete(ctx context.Context, id primitive.ObjectID) error {
+	_, err := r.coll.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return fmt.Errorf("failed to delete category: %w", err)
+	}
+
+	return nil
+}
