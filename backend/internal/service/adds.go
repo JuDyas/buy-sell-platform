@@ -26,6 +26,7 @@ type AdvertService interface {
 	UploadImages([]*multipart.FileHeader) ([]string, error)
 	GetAll(ctx context.Context) ([]models.Advert, error)
 	GetByCategory(ctx context.Context, categoryID primitive.ObjectID) ([]models.Advert, error)
+	GetByUserID(ctx context.Context, userID primitive.ObjectID) ([]models.Advert, error)
 }
 
 type advertService struct {
@@ -143,6 +144,16 @@ func (s *advertService) GetAll(ctx context.Context) ([]models.Advert, error) {
 
 func (s *advertService) GetByCategory(ctx context.Context, categoryID primitive.ObjectID) ([]models.Advert, error) {
 	adverts, err := s.repo.GetByCategory(ctx, categoryID)
+	if err != nil {
+		log.Error(fmt.Sprintf("Error getting adverts: %v", err))
+		return nil, err
+	}
+
+	return adverts, nil
+}
+
+func (s *advertService) GetByUserID(ctx context.Context, userID primitive.ObjectID) ([]models.Advert, error) {
+	adverts, err := s.repo.GetByUserID(ctx, userID)
 	if err != nil {
 		log.Error(fmt.Sprintf("Error getting adverts: %v", err))
 		return nil, err
