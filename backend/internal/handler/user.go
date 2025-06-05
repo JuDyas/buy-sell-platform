@@ -137,3 +137,20 @@ func (h *UserHandler) UploadAvatar() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, map[string]string{"avatarURL": avatarURL})
 	}
 }
+
+func (h *UserHandler) GetMe() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		uid, ok := c.Get("userID").(string)
+		if !ok || uid == "" {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+		}
+
+		id, err := primitive.ObjectIDFromHex(uid)
+		user, err := h.userService.GetByID(c.Request().Context(), id)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "user not found"})
+		}
+
+		return c.JSON(http.StatusOK, user)
+	}
+}

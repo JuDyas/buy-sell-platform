@@ -5,6 +5,7 @@ import (
 	"github.com/JuDyas/buy-sell-platform/backend/internal/app"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/db"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/handler"
+	"github.com/JuDyas/buy-sell-platform/backend/internal/middleware"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/repository"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/routes"
 	"github.com/JuDyas/buy-sell-platform/backend/internal/service"
@@ -44,6 +45,7 @@ func (a *App) Run(envs *config.Config) {
 	a.Handlers.CategoryHandler = handler.NewCategoryHandler(a.Services.CategoryService)
 
 	a.Router = echo.New()
+	a.Router.Use(middleware.CORSMiddleware())
 	a.Router.Static("/static", "static")
 	routes.SetupRoutes(a.Router, *envs, *a.Handlers)
 }

@@ -27,6 +27,7 @@ func SetupRoutes(e *echo.Echo, envs config.Config, handlers app.Handlers) {
 	users.GET("/:id", handlers.UserHandler.GetByID())
 	users.POST("/upload-avatar", handlers.UserHandler.UploadAvatar())
 	users.GET("/:id/adds", handlers.AdvertHandler.GetByAuthor())
+	users.GET("/me", handlers.UserHandler.GetMe())
 
 	adds.POST("", handlers.AdvertHandler.Create())
 	adds.PUT("/:id", handlers.AdvertHandler.Update())
