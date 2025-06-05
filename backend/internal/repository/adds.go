@@ -16,6 +16,7 @@ type AdvertRepository interface {
 	FindByID(ctx context.Context, id primitive.ObjectID) (*models.Advert, error)
 	SoftDelete(ctx context.Context, id primitive.ObjectID) error
 	GetAll(ctx context.Context) ([]models.Advert, error)
+	GetByCategory(ctx context.Context, categoryId primitive.ObjectID) ([]models.Advert, error)
 }
 
 type advertRepository struct {
@@ -67,6 +68,27 @@ func (r *advertRepository) SoftDelete(ctx context.Context, id primitive.ObjectID
 
 func (r *advertRepository) GetAll(ctx context.Context) ([]models.Advert, error) {
 	cur, err := r.coll.Find(ctx, bson.M{"is_deleted": false})
+	if err != nil {
+		return nil, fmt.Errorf("failed to find adverts: %w", err)
+	}
+	defer cur.Close(ctx)
+
+	var adverts []models.Advert
+	for cur.Next(ctx) {
+		var advert models.Advert
+		if err := cur.Decode(&advert); err != nil {
+			adverts = append(adverts, advert)
+		}
+	}
+
+	return adverts, nil
+}
+
+func (r *advertRepository) GetByCategory(ctx context.Context, categoryId primitive.ObjectID) ([]models.Advert, error) {
+	cur, err := r.coll.Find(ctx, bson.M{
+		"category_id": categoryId,
+		"is_deleted":  false,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to find adverts: %w", err)
 	}
