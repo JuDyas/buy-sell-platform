@@ -11,6 +11,7 @@ import (
 func SetupRoutes(e *echo.Echo, envs config.Config, handlers app.Handlers) {
 	var (
 		v1    = e.Group("/api/v1")
+		admin = v1.Group("/admin", middleware.AdminMiddleware)
 		users = v1.Group("/users")
 		adds  = v1.Group("/adds")
 	)
