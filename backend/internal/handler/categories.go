@@ -75,6 +75,17 @@ func (h *CategoryHandler) GetByID() echo.HandlerFunc {
 	}
 }
 
+func (h *CategoryHandler) GetAll() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		categories, err := h.service.GetAll(c.Request().Context())
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "categories not found"})
+		}
+
+		return c.JSON(http.StatusOK, categories)
+	}
+}
+
 func (h *CategoryHandler) Delete() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		id := c.Param("id")
