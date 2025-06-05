@@ -39,6 +39,10 @@ func (a *App) Run(envs *config.Config) {
 	a.Services.AdvertService = service.NewAdvertService(a.Repositories.AdvertRepository)
 	a.Handlers.AdvertHandler = handler.NewAdvertHandler(a.Services.AdvertService)
 
+	a.Repositories.CategoryRepository = repository.NewCategoryRepository(a.DBClient.DB, "categories")
+	a.Services.CategoryService = service.NewCategoriesService(a.Repositories.CategoryRepository)
+	a.Handlers.CategoryHandler = handler.NewCategoryHandler(a.Services.CategoryService)
+
 	a.Router = echo.New()
 	a.Router.Static("/static", "static")
 	routes.SetupRoutes(a.Router, *envs, *a.Handlers)

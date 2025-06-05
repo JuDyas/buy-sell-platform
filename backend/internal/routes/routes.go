@@ -10,10 +10,11 @@ import (
 
 func SetupRoutes(e *echo.Echo, envs config.Config, handlers app.Handlers) {
 	var (
-		v1    = e.Group("/api/v1")
-		admin = v1.Group("/admin", middleware.AdminMiddleware)
-		users = v1.Group("/users")
-		adds  = v1.Group("/adds")
+		v1         = e.Group("/api/v1")
+		admin      = v1.Group("/admin", middleware.AdminMiddleware)
+		users      = v1.Group("/users")
+		adds       = v1.Group("/adds")
+		categories = v1.Group("/categories")
 	)
 
 	e.Use(middleware.AuthMiddleware(envs.JWTSecret))
@@ -31,4 +32,11 @@ func SetupRoutes(e *echo.Echo, envs config.Config, handlers app.Handlers) {
 	adds.GET("/:id", handlers.AdvertHandler.GetByID())
 	adds.DELETE("/:id", handlers.AdvertHandler.SoftDelete())
 	adds.POST("/upload-images", handlers.AdvertHandler.UploadImages())
+
+	categories.GET("", handlers.CategoryHandler.GetAll())
+	categories.GET("/:id", handlers.CategoryHandler.GetByID())
+
+	admin.POST("/categories", handlers.CategoryHandler.Create())
+	admin.PUT("/categories/:id", handlers.CategoryHandler.Update())
+	admin.DELETE("/categories/:id", handlers.CategoryHandler.Delete())
 }
