@@ -64,3 +64,21 @@ func (r *categoryRepository) GetByID(ctx context.Context, id primitive.ObjectID)
 
 	return &category, nil
 }
+
+func (r *categoryRepository) GetAll(ctx context.Context) ([]models.Category, error) {
+	cur, err := r.coll.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to find categories: %w", err)
+	}
+	defer cur.Close(ctx)
+
+	var categories []models.Category
+	for cur.Next(ctx) {
+		var category models.Category
+		if err := cur.Decode(&category); err != nil {
+			categories = append(categories, category)
+		}
+	}
+
+	return categories, nil
+}
