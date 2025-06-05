@@ -15,6 +15,7 @@ type CategoriesService interface {
 	Update(ctx context.Context, id primitive.ObjectID, req dto.CategoryUpdate) error
 	GetByID(ctx context.Context, id primitive.ObjectID) (*models.Category, error)
 	GetAll(ctx context.Context) ([]models.Category, error)
+	Delete(ctx context.Context, id primitive.ObjectID) error
 }
 
 type categoriesService struct {
@@ -76,4 +77,14 @@ func (s *categoriesService) GetAll(ctx context.Context) ([]models.Category, erro
 	}
 
 	return categories, nil
+}
+
+func (s *categoriesService) Delete(ctx context.Context, id primitive.ObjectID) error {
+	err := s.repo.Delete(ctx, id)
+	if err != nil {
+		log.Error(fmt.Sprintf("Error deleting category: %v", err))
+		return err
+	}
+
+	return nil
 }
