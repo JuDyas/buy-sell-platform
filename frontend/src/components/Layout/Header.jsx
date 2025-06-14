@@ -3,60 +3,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-
-/**
- * Header component that displays a navigation header.
- * The component includes user authentication logic, a dynamic user avatar,
- * and a dropdown menu for user-specific actions or authentication links.
- *
- * Internal logic:
- * - Fetches user data using a stored token.
- * - Toggles dropdown menu visibility and handles clicks outside the menu to close it.
- * - Provides user avatar image source URL handling.
- * - Logs the user out by clearing the token and reloading the page.
- *
- * @return {JSX.Element} Returns the header JSX structure, containing navigation and user menu.
- */
+import { useUser } from "@/context/UserContext";
 
 export default function Header() {
-    const [user, setUser] = useState(null);
+    const {user, fetchUser} = useUser();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
-    const getToken = useCallback(() => {
-        if (typeof window !== "undefined") {
-            return localStorage.getItem("token");
-        }
-        return null;
-    }, []);
-
     const getAvatarUrl = (user) => {
-        if (!user?.avatar_url) return "icons/user.svg";
-        // Если путь уже абсолютный (http, https) — возвращаем как есть
+        if (!user?.avatar_url) return "/icons/user.svg";
         if (/^https?:\/\//.test(user.avatar_url)) return user.avatar_url;
-        // Иначе собираем с базовым API урлом (без завершающего /)
         const base = process.env.NEXT_PUBLIC_API_URL_IMG?.replace(/\/+$/, "");
         return base + user.avatar_url;
     };
 
     useEffect(() => {
-        const token = getToken();
-        if (!token) {
-            setUser(null);
-            return;
-        }
-
-        fetch(process.env.NEXT_PUBLIC_API_URL + "/users/me", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            credentials: "include",
-            cache: "no-store",
-        })
-            .then((res) => (res.ok ? res.json() : Promise.reject()))
-            .then((data) => setUser(data))
-            .catch(() => setUser(null));
-    }, [getToken]);
+        fetchUser();
+    }, [fetchUser]);
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -79,7 +42,7 @@ export default function Header() {
 
     return (
         <header className="bg-white border-b">
-            <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="container mx-auto px-4 py-1.5 flex items-center justify-between">
                 <Link href="/">
                   <span className="text-2xl font-bold tracking-tight text-[#2563eb] cursor-pointer select-none">
                     GoSell
@@ -106,7 +69,7 @@ export default function Header() {
                             {user ? (
                                 <div>
                                     <div className="px-4 pt-2 text-sm text-gray-900 font-medium truncate">
-                                        {user.username || user.email || "Пользователь"}
+                                        {user.username || user.email}
                                     </div>
                                     <div className="px-4 pb-2 text-sm text-gray-500 truncate border-b">
                                         {user.email}
@@ -130,7 +93,7 @@ export default function Header() {
                                         href="/login"
                                         className="block px-4 py-2 hover:bg-gray-50 text-gray-700"
                                     >
-                                        Війти
+                                        Увійти
                                     </Link>
                                     <Link
                                         href="/register"
