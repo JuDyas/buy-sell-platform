@@ -1,7 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '../context/UserContext';
+import { useUser } from '@/context/UserContext';
 
 export function useAuthRedirect({ redirectTo = "/", fetchOnMount = true } = {}) {
     const router = useRouter();
