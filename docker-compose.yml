@@ -21,6 +21,7 @@ services:
       - redis
     networks:
       - backend
+      - frontend
 
   mongo:
     image: mongo:7.0
@@ -47,10 +48,26 @@ services:
     networks:
       - backend
 
+  frontend:
+    container_name: frontend_gosell
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    environment:
+      API_URL: ${API_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_API_URL_IMG: ${NEXT_PUBLIC_API_URL_IMG}
+    networks:
+      - frontend
+
 volumes:
   mongo_data:
   redis_data:
 
 networks:
   backend:
+    driver: bridge
+  frontend:
     driver: bridge
