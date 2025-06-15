@@ -12,6 +12,7 @@ export default function AdvertDetails({ advertId }) {
     const [imgIdx, setImgIdx] = useState(0);
     const [author, setAuthor] = useState(null);
     const [category, setCategory] = useState(null);
+    const [showContacts, setShowContacts] = useState(false);
 
     useEffect(() => {
         if (!advertId) return;
@@ -62,7 +63,6 @@ export default function AdvertDetails({ advertId }) {
     const handlePrev = () => setImgIdx((old) => (old - 1 + images.length) % images.length);
     const handleNext = () => setImgIdx((old) => (old + 1) % images.length);
 
-    // Для аватарки
     const getAvatarUrl = (user) => {
         if (!user?.avatar_url) return "/icons/user.svg";
         if (/^https?:\/\//.test(user.avatar_url)) return user.avatar_url;
@@ -72,56 +72,84 @@ export default function AdvertDetails({ advertId }) {
     return (
         <div className="container mx-auto py-10 px-4 flex flex-col gap-6">
             <div className="flex flex-row gap-6">
-                <div className="w-[70%] rounded-xl bg-white shadow p-5 flex items-center justify-center relative">
-                    {images.length > 1 && (
-                        <button
-                            className="
-                            absolute left-0 top-1/2 -translate-y-1/2
-                            bg-gray-200 hover:bg-gray-300
-                            px-2 pb-1.5 ml-1.5 rounded-full shadow transition"
-                            onClick={handlePrev}
-                            aria-label="Попередне фото"
-                        >
-                            <span className="text-2xl">{'‹'}</span>
-                        </button>
-                    )}
-                    {images.length ? (
-                        <img
-                            src={
-                                images[imgIdx].startsWith('http')
-                                    ? images[imgIdx]
-                                    : `${IMG_URL}/${images[imgIdx].replace(/^\.?\//, '')}`
-                            }
-                            alt={advert.Title}
-                            className="w-full max-h-[38rem] object-contain rounded"
-                        />
-                    ) : (
-                        <div className="w-full h-[200px] bg-gray-200 flex justify-center items-center rounded text-3xl text-gray-400">
-                            🖼️
+                {/* Левая колонка: 70% — фото и описание */}
+                <div className="w-[70%] flex flex-col gap-6">
+                    <div className="rounded-xl bg-white shadow p-5 flex items-center justify-center relative">
+                        {images.length > 1 && (
+                            <button
+                                className="
+                                absolute left-0 top-1/2 -translate-y-1/2
+                                bg-gray-200 hover:bg-gray-300
+                                px-2 pb-1.5 ml-1.5 rounded-full shadow transition"
+                                onClick={handlePrev}
+                                aria-label="Попередне фото"
+                            >
+                                <span className="text-2xl">{'‹'}</span>
+                            </button>
+                        )}
+                        {images.length ? (
+                            <img
+                                src={
+                                    images[imgIdx].startsWith('http')
+                                        ? images[imgIdx]
+                                        : `${IMG_URL}/${images[imgIdx].replace(/^\.?\//, '')}`
+                                }
+                                alt={advert.Title}
+                                className="w-full max-h-[38rem] object-contain rounded"
+                            />
+                        ) : (
+                            <div className="w-full h-[200px] bg-gray-200 flex justify-center items-center rounded text-3xl text-gray-400">
+                                🖼️
+                            </div>
+                        )}
+                        {images.length > 1 && (
+                            <button
+                                className="absolute right-0 top-1/2 -translate-y-1/2
+                                bg-gray-200 hover:bg-gray-300
+                                px-2 pb-1.5 mr-1.5 rounded-full shadow transition"
+                                onClick={handleNext}
+                                aria-label="Наступне фото"
+                            >
+                                <span className="text-2xl">{'›'}</span>
+                            </button>
+                        )}
+                    </div>
+                    {/* Описание и категория под фотографиями */}
+                    <div className="bg-white rounded-xl shadow p-6">
+                        <div className="mb-2 text-sm text-gray-500">
+                            Категорія: {category?.name || '—'}
                         </div>
-                    )}
-                    {images.length > 1 && (
-                        <button
-                            className="absolute right-0 top-1/2 -translate-y-1/2
-                            bg-gray-200 hover:bg-gray-300
-                            px-2 pb-1.5 mr-1.5 rounded-full shadow transition"
-                            onClick={handleNext}
-                            aria-label="Наступне фото"
-                        >
-                            <span className="text-2xl">{'›'}</span>
-                        </button>
-                    )}
+                        <div className="font-semibold mb-1">Опис</div>
+                        <div className="text-gray-700 whitespace-pre-line">{advert.Description}</div>
+                    </div>
                 </div>
 
+                {/* Правая колонка: 30% — детали, продавец, местоположение */}
                 <div className="w-[30%] flex flex-col gap-4">
                     <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-4">
                         <h1 className="text-2xl font-bold">{advert.Title}</h1>
                         <div className="text-lg font-bold text-blue-700">{advert.Price} ₴</div>
+
+                        {showContacts && (
+                            <div className="mb-3 py-2 px-3 bg-blue-50 rounded">
+                                <div className="text-sm text-gray-800">
+                                    <span className="font-semibold">Email:</span>{' '}
+                                    {author?.email || '—'}
+                                </div>
+                                {author?.phone && (
+                                    <div className="text-sm text-gray-800">
+                                        <span className="font-semibold">Телефон:</span>{' '}
+                                        {author.phone}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <button
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2 transition"
-                            onClick={() => alert('contact')}
+                            onClick={() => setShowContacts(v => !v)}
                         >
-                            Показати контакти продавця
+                            {showContacts ? "Сховати контакти" : "Показати контакти продавця"}
                         </button>
                     </div>
                     <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-2">
@@ -154,22 +182,12 @@ export default function AdvertDetails({ advertId }) {
                             Перейти до профілю
                         </button>
                     </div>
-                    <div className=" bg-white h-32 rounded-xl shadow p-6 flex flex-col">
+                    <div className="bg-white h-32 rounded-xl shadow p-6 flex flex-col">
                         <div className="font-medium text-sm text-gray-500 mb-1">Місцезнаходження</div>
                         <div className="text-gray-800">
                             {advert.Location || advert.location || advert.city || '—'}
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div className="flex flex-row gap-6">
-                <div className="w-[70%] bg-white rounded-xl shadow p-6">
-                    <div className="mb-2 text-sm text-gray-500">
-                        Категорія: {category?.name || '—'}
-                    </div>
-                    <div className="font-semibold mb-1">Опис</div>
-                    <div className="text-gray-700 whitespace-pre-line">{advert.Description}</div>
                 </div>
             </div>
         </div>
