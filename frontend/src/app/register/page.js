@@ -3,7 +3,7 @@ import RegisterForm from '@/components/Auth/RegisterForm';
 import {useAuthRedirect} from "@/hooks/useAuthRedirect";
 
 export default function RegisterPage() {
-    const { user, loading } = useAuthRedirect();
+    const { user, loading } = useAuthRedirect({requireAuth: false});
 
     if (loading) {
         return (
@@ -19,7 +19,7 @@ export default function RegisterPage() {
                 <div className="mb-6 text-center">
                     <h1 className="text-3xl font-bold mb-2">Реєстрація</h1>
                 </div>
-                <RegisterForm onSuccess={handleSuccess}/>
+                <RegisterForm />
                 <div className="mt-8">
         <span className="text-gray-600 text-sm">
           Вже є аккаунт?{' '}

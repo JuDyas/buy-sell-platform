@@ -3,7 +3,7 @@ import LoginForm from '@/components/Auth/LoginForm';
 import {useAuthRedirect} from "@/hooks/useAuthRedirect";
 
 export default function LoginPage() {
-    const { user, loading } = useAuthRedirect();
+    const { user, loading } = useAuthRedirect({requireAuth: false});
 
     if (loading) {
         return (
