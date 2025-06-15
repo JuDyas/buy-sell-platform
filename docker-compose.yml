@@ -53,6 +53,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
     depends_on:
       - backend
     environment:
