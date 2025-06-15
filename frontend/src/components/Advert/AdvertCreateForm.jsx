@@ -1,7 +1,10 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 export default function CreateAdvertForm() {
+    useAuthRedirect({redirectTo: '/login', requireAuth: true, fetchOnMount: true });
+
     const [form, setForm] = useState({
         title: '',
         description: '',
