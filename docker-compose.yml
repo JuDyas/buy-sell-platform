@@ -1,0 +1,47 @@
+services:
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - MONGO_DB_NAME=${MONGO_DB_NAME}
+      - MONGO_DB_COLLECTION=${MONGO_DB_COLLECTION}
+      - REDIS_URI=${REDIS_URI}
+      - API_PORT=${API_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - .env:/app/.env
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - backend
+
+  mongo:
+    image: mongo:7.0
+    container_name: mongo
+    restart: always
+    ports:
+      - "${MONGO_DB_PORT}:${MONGO_DB_PORT}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - backend
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    restart: always
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
