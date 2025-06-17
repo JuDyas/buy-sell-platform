@@ -6,7 +6,7 @@ import Link from 'next/link';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const IMG_URL = process.env.NEXT_PUBLIC_API_URL_IMG?.replace(/\/+$/, '');
 
-export default function AdvertsGrid() {
+export default function AdvertsGrid({ categoryId, userId }) {
     const [adverts, setAdverts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -15,9 +15,19 @@ export default function AdvertsGrid() {
         const fetchAdverts = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`${API_URL}/adds`);
+                let url;
+                if (userId) {
+                    url = `${API_URL}/users/${userId}/adds`;
+                } else if (categoryId) {
+                    url = `${API_URL}/categories/${categoryId}/adds`;
+                } else {
+                    url = `${API_URL}/adds`;
+                }
+                const res = await fetch(url);
                 const data = await res.json();
-                if (Array.isArray(data?.adverts)) {
+                if (Array.isArray(data)) {
+                    setAdverts(data);
+                } else if (Array.isArray(data?.adverts)) {
                     setAdverts(data.adverts);
                 } else {
                     setError('Не вдалося отримати оголошення');
@@ -29,7 +39,7 @@ export default function AdvertsGrid() {
             }
         };
         fetchAdverts();
-    }, []);
+    }, [categoryId, userId]);
 
     if (loading) {
         return <div className="py-10 text-center text-gray-600">Завантаження…</div>;
