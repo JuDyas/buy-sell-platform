@@ -35,6 +35,7 @@ func SetupRoutes(e *echo.Echo, envs config.Config, handlers app.Handlers) {
 	adds.DELETE("/:id", handlers.AdvertHandler.SoftDelete())
 	adds.POST("/upload-images", handlers.AdvertHandler.UploadImages())
 	adds.GET("", handlers.AdvertHandler.GetAll())
+	adds.POST("/search", handlers.AdvertHandler.SearchAdverts())
 
 	categories.GET("", handlers.CategoryHandler.GetAll())
 	categories.GET("/:id", handlers.CategoryHandler.GetByID())
