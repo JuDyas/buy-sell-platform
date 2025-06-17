@@ -179,3 +179,20 @@ func (h *AdvertHandler) GetByAuthor() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, adverts)
 	}
 }
+
+func (h *AdvertHandler) SearchAdverts() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var req dto.SearchRequest
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		}
+		if req.Query == "" {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Empty query"})
+		}
+		adverts, err := h.service.Search(c.Request().Context(), req.Query)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Search error"})
+		}
+		return c.JSON(http.StatusOK, map[string]interface{}{"adverts": adverts})
+	}
+}
