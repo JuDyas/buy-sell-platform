@@ -6,24 +6,24 @@ import Link from 'next/link';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const IMG_URL = process.env.NEXT_PUBLIC_API_URL_IMG?.replace(/\/+$/, '');
 
-export default function AdvertsGrid({ categoryId, userId }) {
-    const [adverts, setAdverts] = useState([]);
-    const [loading, setLoading] = useState(true);
+export default function AdvertsGrid({ adverts: externalAdverts, categoryId }) {
+    const [adverts, setAdverts] = useState(externalAdverts || []);
+    const [loading, setLoading] = useState(!externalAdverts);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const fetchAdverts = async () => {
+        if (externalAdverts) {
+            setAdverts(externalAdverts);
+            setLoading(false);
+            setError('');
+            return;
+        }
+
+        const fetchCategoryAdverts = async () => {
             setLoading(true);
+            setError('');
             try {
-                let url;
-                if (userId) {
-                    url = `${API_URL}/users/${userId}/adds`;
-                } else if (categoryId) {
-                    url = `${API_URL}/categories/${categoryId}/adds`;
-                } else {
-                    url = `${API_URL}/adds`;
-                }
-                const res = await fetch(url);
+                const res = await fetch(`${API_URL}/categories/${categoryId}/adds`);
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     setAdverts(data);
@@ -38,14 +38,40 @@ export default function AdvertsGrid({ categoryId, userId }) {
                 setLoading(false);
             }
         };
-        fetchAdverts();
-    }, [categoryId, userId]);
+
+        const fetchAllAdverts = async () => {
+            setLoading(true);
+            setError('');
+            try {
+                const res = await fetch(`${API_URL}/adds`);
+                const data = await res.json();
+                if (Array.isArray(data?.adverts)) {
+                    setAdverts(data.adverts);
+                } else {
+                    setError('Не вдалося отримати оголошення');
+                }
+            } catch {
+                setError('Помилка з’єднання з сервером');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (categoryId) {
+            fetchCategoryAdverts();
+        } else {
+            fetchAllAdverts();
+        }
+    }, [externalAdverts, categoryId]);
 
     if (loading) {
         return <div className="py-10 text-center text-gray-600">Завантаження…</div>;
     }
     if (error) {
         return <div className="py-10 text-center text-red-500">{error}</div>;
+    }
+    if (!adverts || adverts.length === 0) {
+        return <div className="py-10 text-center text-gray-500">Нічого не знайдено</div>;
     }
 
     return (
