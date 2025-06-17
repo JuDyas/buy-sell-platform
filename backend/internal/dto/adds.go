@@ -15,3 +15,7 @@ type AdvertUpdate struct {
 	Price       int      `json:"price,omitempty"`
 	Images      []string `json:"images,omitempty"`
 }
+
+type SearchRequest struct {
+	Query string `json:"query"`
+}
