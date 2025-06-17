@@ -27,6 +27,7 @@ type AdvertService interface {
 	GetAll(ctx context.Context) ([]models.Advert, error)
 	GetByCategory(ctx context.Context, categoryID primitive.ObjectID) ([]models.Advert, error)
 	GetByUserID(ctx context.Context, userID primitive.ObjectID) ([]models.Advert, error)
+	Search(ctx context.Context, query string) ([]models.Advert, error)
 }
 
 type advertService struct {
@@ -157,6 +158,15 @@ func (s *advertService) GetByUserID(ctx context.Context, userID primitive.Object
 	if err != nil {
 		log.Error(fmt.Sprintf("Error getting adverts: %v", err))
 		return nil, err
+	}
+
+	return adverts, nil
+}
+
+func (s *advertService) Search(ctx context.Context, query string) ([]models.Advert, error) {
+	adverts, err := s.repo.Search(ctx, query)
+	if err != nil {
+		log.Error(fmt.Sprintf("Error getting adverts: %v", err))
 	}
 
 	return adverts, nil
