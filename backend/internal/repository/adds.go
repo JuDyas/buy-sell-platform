@@ -18,6 +18,7 @@ type AdvertRepository interface {
 	GetAll(ctx context.Context) ([]models.Advert, error)
 	GetByCategory(ctx context.Context, categoryId primitive.ObjectID) ([]models.Advert, error)
 	GetByUserID(ctx context.Context, userID primitive.ObjectID) ([]models.Advert, error)
+	Search(ctx context.Context, query string) ([]models.Advert, error)
 }
 
 type advertRepository struct {
@@ -121,6 +122,31 @@ func (r *advertRepository) GetByUserID(ctx context.Context, userID primitive.Obj
 	if err != nil {
 		return nil, fmt.Errorf("failed to find adverts: %w", err)
 	}
+
+	var adverts []models.Advert
+	for cur.Next(ctx) {
+		var advert models.Advert
+		if err := cur.Decode(&advert); err == nil {
+			adverts = append(adverts, advert)
+		}
+	}
+
+	return adverts, nil
+}
+
+func (r *advertRepository) Search(ctx context.Context, query string) ([]models.Advert, error) {
+	filter := bson.M{
+		"is_deleted": false,
+		"$or": []bson.M{
+			{"title": bson.M{"$regex": query, "$options": "i"}},
+			{"description": bson.M{"$regex": query, "$options": "i"}},
+		},
+	}
+	cur, err := r.coll.Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search adverts: %w", err)
+	}
+	defer cur.Close(ctx)
 
 	var adverts []models.Advert
 	for cur.Next(ctx) {
